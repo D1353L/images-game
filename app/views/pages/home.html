@@ -1,0 +1,30 @@
+<div align="center">
+    <input id="image_files" type="file" multiple \>
+    <button onclick="Upload(event)">Upload</button>
+  <p id="error"></p>
+</div>
+
+<script>
+  async function Upload(e) {
+    e.preventDefault()
+
+    var data = new FormData(),
+        files = document.getElementById("image_files").files
+    for(var i = 0; i < files.length; i++) {
+      data.append('image[files][]', files[i])
+    }
+
+    const response = await fetch("/api/v1/images/upload", {
+      method: "POST",
+      body: data
+    });
+
+    const result = await response.json();
+    if (result.status === "error") {
+      document.getElementById("error").innerHTML = result.message
+    } else {
+      document.getElementById("error").innerHTML = "";
+      window.location = "/game"
+    }
+  }
+</script>

@@ -1,0 +1,164 @@
+<div align="center">
+  <h1 id="tick"></h1>
+  <img id="image" width="300" height="250" \>
+  <div>
+    <button onclick="Play(event)">Play</button>
+    <p id="error"></p>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Tick</th>
+        <th>Image</th>
+      </tr>
+    </thead>
+    <tbody id="playsList"></tbody>
+  </table>
+
+</div>
+
+<style>
+  table {
+    border-collapse: collapse;
+  }
+
+  table, th, td {
+    border: 1px solid black;
+  }
+</style>
+
+<script>
+    window.onload = function() {
+      let images = LoadImages()
+      let initialTimerValue = 10, initialImageIndex = 0
+      SetTickValue(initialTimerValue)
+      SetImageValue(images[initialImageIndex].file.url)
+      LoadPlays()
+      StartTimer(initialTimerValue, initialImageIndex, images)
+    }
+
+    function LoadImages() {
+      var xmlHttp = new XMLHttpRequest()
+      xmlHttp.open("GET", "/api/v1/images", false)
+      xmlHttp.send()
+      resp = JSON.parse(xmlHttp.responseText)
+      if (resp.status === "error") {
+        document.getElementById("error").innerHTML = resp.message
+      } else {
+        document.getElementById("error").innerHTML = "";
+      }
+      return resp
+    }
+
+    function LoadPlays() {
+      getAsync("/api/v1/plays")
+      .then((responseData) => {
+        SetPlaysList(responseData)
+      });
+    }
+
+    function Play(e) {
+      e.preventDefault()
+      data = {
+        play: {
+          tick: document.getElementById("tick").innerHTML,
+          image_url: document.getElementById("image").src
+        }
+      }
+
+      postAsync("/api/v1/plays", data)
+      .then((responseData) => {
+        SetPlaysList(responseData)
+      })
+    }
+
+    function StartTimer(initialTimerValue, initialImageIndex, images) {
+      var imageIndex = initialImageIndex
+
+      setInterval(function() {
+        var timerValue = parseInt(document.getElementById("tick").innerHTML)
+
+        if (timerValue > 1) {
+            SetTickValue(timerValue - 1)
+        } else {
+            SetTickValue(initialTimerValue)
+        }
+
+        if (imageIndex < images.length-1) {
+          imageIndex += 1
+        } else {
+          imageIndex = initialImageIndex
+        }
+
+        SetImageValue(images[imageIndex].file.url)
+      }, 1000);
+    }
+
+    function SetPlaysList(plays) {
+      if (!Array.isArray(plays)) {
+        plays = [plays]
+      }
+
+      plays.forEach(function(play) {
+        let tdTick = document.createElement("td")
+        let tickText = document.createTextNode(play.tick);
+        tdTick.appendChild(tickText);
+
+        let tdImg = document.createElement("td")
+        let img = document.createElement("img")
+        img.src = play.image_url
+        img.width = 300
+        img.height = 250
+        tdImg.appendChild(img);
+
+        let tr = document.createElement("tr")
+        tr.appendChild(tdTick);
+        tr.appendChild(tdImg);
+
+        document.getElementById("playsList").appendChild(tr);
+      })
+    }
+
+    function SetTickValue(tick) {
+      document.getElementById("tick").innerHTML = tick
+    }
+
+    function SetImageValue(imageURL) {
+      document.getElementById("image").src = imageURL
+    }
+
+    async function getAsync(url) {
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+      });
+      const result = await response.json();
+      if (result.status === "error") {
+        document.getElementById("error").innerHTML = result.message
+      } else {
+        document.getElementById("error").innerHTML = "";
+        return result
+      }
+    }
+
+    async function postAsync(url, data) {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+
+      const result = await response.json();
+      if (result.status === "error") {
+        document.getElementById("error").innerHTML = result.message
+      } else {
+        document.getElementById("error").innerHTML = "";
+        return result
+      }
+    }
+</script>

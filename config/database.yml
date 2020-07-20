@@ -1,0 +1,22 @@
+default: &default
+  adapter: postgresql
+  host: localhost
+  port: 5432
+  database: images_game
+  encoding: utf8
+  ctype: ru_RU.UTF-8
+  template: template0
+  username: images_game_user
+  password: images123
+  pool: 10
+  timeout: 5000
+
+development:
+  <<: *default
+
+# Warning: The database defined as "test" will be erased and
+# re-generated from your development database when you run "rake".
+# Do not set this db to the same as development or production.
+test:
+  <<: *default
+  database: images_game_test
