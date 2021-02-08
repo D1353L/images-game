@@ -3,7 +3,7 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
 ruby '2.7.1'
 
-gem 'carrierwave', '~> 2.0'
+gem 'carrierwave', '~> 2.1'
 gem 'jbuilder'
 gem 'pg'
 gem 'rails', '~> 6.0.3', '>= 6.0.3.2'
